@@ -3,7 +3,7 @@
 ![tests](https://github.com/Konstantin343/cppcheck-annotation-action/actions/workflows/test.yml/badge.svg?branch=main)
 
 
-Github action, which allows you to annotate C/C++ code in a pull request with warnings, errors, etc. from [cppcheck](https://github.com/deep5050/cppcheck-action/blob/main/README.md) static analysis tool.
+Github action, which allows you to annotate C/C++ code in a pull request with warnings, errors, etc. from [cppcheck](https://github.com/danmar/cppcheck) static analysis tool.
 
 ## Usage
 
