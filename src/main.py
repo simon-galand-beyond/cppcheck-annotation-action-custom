@@ -2,6 +2,7 @@ import os
 import subprocess
 import xml.etree.ElementTree as ElementTree
 import json
+import urllib.parse
 
 # Input parameters from GitHub Action
 INPUT_JSON_RESULTS_FILE = os.getenv("INPUT_JSON-RESULTS-FILE")
@@ -21,7 +22,6 @@ INPUT_ANNOTATION_LEVEL_DEFAULT = os.getenv("INPUT_ANNOTATION-LEVEL-DEFAULT")
 EXECUTABLE = "cppcheck"
 OUTPUT_FILE = "cppcheck-results.xml"
 
-
 def get_annotation_level(severity):
     if severity in INPUT_ANNOTATION_NOTICES.split(","):
         return "notice"
@@ -31,7 +31,6 @@ def get_annotation_level(severity):
         return "failure"
 
     return INPUT_ANNOTATION_LEVEL_DEFAULT
-
 
 def get_args():
     args = ["--xml", f'--output-file={OUTPUT_FILE}']
@@ -63,6 +62,10 @@ def get_args():
 
     return args
 
+def generate_chatgpt_link(message):
+    """Generate a ChatGPT query link for the given message."""
+    query = urllib.parse.quote(message)
+    return f"https://chat.openai.com/?q={query}"
 
 def parse_cppcheck_xml(reportFile):
     root = ElementTree.parse(reportFile).getroot()
@@ -72,9 +75,14 @@ def parse_cppcheck_xml(reportFile):
         location = error.find("location")
         if location is None:
             continue
+
+        message = error.get("verbose").replace(". ", ".\n")
+        chatgpt_url = generate_chatgpt_link("Answer as a senior embedded developer. \n What does this cppcheck message means:\n"+message)
+        message += f"\n\n[Ask GPT about this message]({chatgpt_url})"
+
         annotations.append({
             "title": error.get("msg"),
-            "message": error.get("verbose").replace(". ", ".\n"),
+            "message": message,
             "annotation_level": get_annotation_level(error.get("severity")),
             "file": location.get("file"),
             "line": int(location.get("line")),
@@ -82,7 +90,6 @@ def parse_cppcheck_xml(reportFile):
             "end_column": int(location.get("column"))
         })
     return annotations
-
 
 def main():
     command = (EXECUTABLE, *get_args())
@@ -96,7 +103,6 @@ def main():
 
     annotations = parse_cppcheck_xml(OUTPUT_FILE)
     print(json.dumps(annotations, indent=2), file=open(INPUT_JSON_RESULTS_FILE, "w"))
-
 
 if __name__ == '__main__':
     main()
