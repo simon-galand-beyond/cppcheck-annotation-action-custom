@@ -1,3 +1,5 @@
+This is a fork to implement custom features such as direct link to chatgpt explanation in the annotation comment 
+
 # CppCheck Annotation Action
 
 ![tests](https://github.com/Konstantin343/cppcheck-annotation-action/actions/workflows/test.yml/badge.svg?branch=main)
